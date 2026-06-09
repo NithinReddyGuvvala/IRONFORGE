@@ -1,0 +1,65 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper to check if a user is logged in
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    // Helper to check if the user is an admin
+    function isAdmin() {
+      return isLoggedIn() && 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         request.auth.token.email == 'admin@ironforge.gym' ||
+         request.auth.token.email == 'nithinreddyguvvala@gmail.com' ||
+         request.auth.token.email.matches('.*@ironforge\\.gym$'));
+    }
+
+    // Rules for 'users' collection
+    match /users/{userId} {
+      // Users can read and write their own profile document
+      allow get, write: if isLoggedIn() && request.auth.uid == userId;
+      // Allow listing queries so we can check if the collection is empty for bootstrapping roles
+      allow list: if isLoggedIn();
+      // Admins have full access
+      allow read, write, delete: if isAdmin();
+    }
+
+    // Rules for 'contacts' collection
+    match /contacts/{contactId} {
+      // Authenticated users can send messages (create submissions)
+      allow create: if isLoggedIn();
+      // Admins have full access to read, update or delete submissions
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Rules for 'config' collection
+    match /config/{configId} {
+      // Anyone can read config details (prices, offers)
+      allow read: if true;
+      // Only admins can write or modify settings
+      allow write: if isAdmin();
+    }
+
+    // Rules for 'reviews' collection
+    match /reviews/{reviewId} {
+      // Anyone can read reviews
+      allow read: if true;
+      // Authenticated users can write a review
+      allow create: if isLoggedIn();
+      // Only admins can delete or modify reviews
+      allow update, delete: if isAdmin();
+    }
+
+    // Rules for 'bookings' collection
+    match /bookings/{bookingId} {
+      // Authenticated users can create bookings
+      allow create: if isLoggedIn();
+      // Authenticated users can read their own bookings, admins have full access
+      allow read, update, delete: if isLoggedIn() && (resource == null || resource.data.uid == request.auth.uid || isAdmin());
+    }
+  }
+}
