@@ -12,6 +12,7 @@ const links = [
   { href: "#trainers", label: "Trainers" },
   { href: "#gallery", label: "Gallery" },
   { href: "#bmi", label: "BMI" },
+  { href: "#reviews", label: "Reviews" },
   { href: "#contact", label: "Contact" },
 ];
 

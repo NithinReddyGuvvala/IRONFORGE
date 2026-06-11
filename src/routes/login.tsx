@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Dumbbell, Phone, Mail, Loader2, ArrowLeft } from "lucide-react";
+import { Dumbbell, Phone, Mail, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ConfirmationResult, updateProfile, fetchSignInMethodsForEmail } from "firebase/auth";
@@ -40,6 +40,7 @@ function LoginScreen() {
   const [method, setMethod] = useState<"email" | "google">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Email form state
   const [email, setEmail] = useState("");
@@ -322,14 +323,31 @@ function LoginScreen() {
               <div className="space-y-1">
                 <label className="block">
                   <span className="text-xs uppercase tracking-widest text-muted-foreground">Password</span>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(null); }}
-                    className="mt-2 w-full rounded-sm border border-border bg-background px-4 py-3 text-sm focus:border-primary focus:outline-none"
-                    placeholder="••••••••"
-                  />
+                  <div className="relative mt-2">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                      className="w-full rounded-sm border border-border bg-background pl-4 pr-10 py-3 text-sm focus:border-primary focus:outline-none"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowPassword(!showPassword);
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors cursor-pointer flex items-center justify-center z-10 w-8 h-8 focus:outline-none"
+                    >
+                      {showPassword ? (
+                        <Eye className="h-5 w-5" />
+                      ) : (
+                        <EyeOff className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </label>
                 {mode === "login" && (
                   <div className="flex justify-end">
